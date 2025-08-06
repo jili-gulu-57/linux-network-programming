@@ -1,0 +1,84 @@
+1. 预处理阶段
+编译器在真正编译代码之前，会先执行 预处理，处理所有以 # 开头的指令（如 #include、#ifdef、#define 等）。
+头文件保护机制就是在这个阶段生效的。
+
+2. 执行流程示例
+假设我们有两个文件：
+
+mystdio.h（头文件）
+
+main.c（主程序）
+
+mystdio.h 内容
+
+#ifndef __MYSTDIO_H__  
+#define __MYSTDIO_H__  
+
+void sayHello();  // 声明一个函数
+
+#endif  
+main.c 内容
+c
+#include "mystdio.h"  // 第一次包含
+#include "mystdio.h"  // 第二次包含（故意重复）
+
+int main() {
+    sayHello();
+    return 0;
+}
+3. 预处理器的处理步骤
+（1）第一次处理 #include "mystdio.h"
+预处理器发现 #ifndef __MYSTDIO_H__，检查是否定义过 __MYSTDIO_H__。
+
+当前未定义，所以进入块内。
+
+执行 #define __MYSTDIO_H__，定义这个宏（相当于打个标记：“这个头文件已经处理过了”）。
+
+保留 void sayHello();（函数的声明）。
+
+遇到 #endif，结束条件块。
+
+此时，预处理后的 main.c 临时内容：
+
+c
+void sayHello();  // 来自第一次包含
+
+// 第二次包含待处理...
+int main() {
+    sayHello();
+    return 0;
+}
+（2）第二次处理 #include "mystdio.h"
+预处理器再次遇到 #ifndef __MYSTDIO_H__，但此时 __MYSTDIO_H__ 已经被定义过（第一次包含时 #define 的）。
+
+直接跳过整个块（从 #ifndef 到 #endif 之间的所有内容），包括 void sayHello(); 和 #endif。
+
+最终预处理后的 main.c：
+
+c
+void sayHello();  // 来自第一次包含（第二次被跳过了）
+
+int main() {
+    sayHello();
+    return 0;
+}
+4. 正式编译
+预处理完成后，编译器看到的代码是 去重后的版本：
+
+c
+void sayHello();  // 只有一份声明
+
+int main() {
+    sayHello();
+    return 0;
+}
+不会因重复声明 sayHello() 而报错。
+
+编译正常通过，生成可执行文件。
+
+关键结论
+头文件保护是预处理器行为，发生在编译之前。
+
+#define 的宏是全局的，整个编译单元（如 main.c）都能看到。
+
+实际编译的代码是去重后的版本，避免了重复定义问题。
