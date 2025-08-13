@@ -1,0 +1,18 @@
+libmyc.a:mymath.o mystdio.o 	
+	ar -rc $@ $^	
+
+%.o:%.c     
+	gcc -c $< 
+
+.PHONY:clean
+clean:
+	rm -rf *.a *.o mylibc *.tgz
+
+.PHONY:output
+output:
+	mkdir mylibc
+	mkdir -p mylibc/include
+	mkdir -p mylibc/lib 
+	cp *.h mylibc/include
+	cp *.a mylibc/lib 
+	tar czf mylibc.tgz mylibc
