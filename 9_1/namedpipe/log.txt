@@ -1,0 +1,62 @@
+#include"common.hpp"
+
+//在server里创建命名管道
+
+int main()
+{
+    //1.创建管道文件
+    int n=mkfifo(fifoname.c_str(),mode);
+    if(n==0)
+    {
+        std::cout<<"mkfifo success"<<std::endl;
+    }
+    else
+    {
+        // std::cout<<"mkfifo failed"<<std::endl;
+        perror("mkfifo");   //将错误码转化成信息
+        exit(1);
+    }
+
+    //2.打开管道文件
+    int fd=open(fifoname.c_str(),O_RDONLY);
+    if(fd<0)
+    {
+        perror("open");
+        exit(2);
+    }
+    //命名管道只有在另一端也启动的情况下，才会打开管道文件，否则就会阻塞
+    std::cout<<"open success"<<std::endl;
+
+    //3.读取管道文件
+    // char buffer[size];
+    char buffer[SIZE];
+    
+    while(true)
+    {
+        buffer[0]=0;
+        ssize_t num=read(fd,buffer,sizeof(buffer)-1);
+        if(num>0)
+        {
+            buffer[num]=0;
+            std::cout << "client say:" << buffer << std::endl;
+        }
+        else if(num==0)
+        {
+            std::cout<<"client quit!"<<std::endl;
+            break;
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    //4.关闭管道文件
+    close(fd);
+
+    // sleep(3);
+    //用完删除管道文件
+    int m=unlink(fifoname.c_str());
+    (void)m;
+    return 0;
+}
