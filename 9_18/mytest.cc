@@ -20,13 +20,14 @@ void PrintPending(sigset_t &pending)
 }
 int main()
 {
+    
     // 屏蔽2号信号
     sigset_t block, oblock;
     sigemptyset(&block);
     sigemptyset(&oblock);
 
     // 在用户层面设置2号屏蔽
-    sigaddset(&block, 2);
+    // sigaddset(&block, 2);
 
     // 设置到内核层面
     sigprocmask(SIG_SETMASK, &block, &oblock);
