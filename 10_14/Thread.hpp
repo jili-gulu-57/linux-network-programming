@@ -26,20 +26,19 @@ public:
     Thread(func_t func, const std::string &name=threadnamefault) : _func(func), _name(name) {};
     void Start()
     {
-        int n=pthread_create(&_tid)
+        int n=pthread_create(&_tid,nullptr,start_routine,nullptr);
+        if(n==0)
+        {
+            printf("create thread success\n");
+        }
     }
     void Join()
     {
+        int n=pthread_join(_tid,nullptr);
+        
     }
     ~Thread();
 };
 
-Thread::Thread(/* args */)
-{
-}
-
-Thread::~Thread()
-{
-}
 
 #endif
