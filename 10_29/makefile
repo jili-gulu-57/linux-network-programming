@@ -1,5 +1,5 @@
 logtest:main.cc
-	g++ $@ $^ -std=c++11
+	g++ -o $@ $^ -std=c++17 -lpthread
 .PHONY:clean
 clean:
 	rm -f logtest
