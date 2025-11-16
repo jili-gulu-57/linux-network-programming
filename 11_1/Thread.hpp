@@ -19,17 +19,16 @@ using func_t = std::function<void()>;
 // using func_t :类型别名语法，相当于typedef
 // std::function<void()>：函数对象类型
 
-const std::string threadnamefault = "None-name";
+const std::string threadnamefault = "None-name";    //默认线程名称
 
 class Thread
 {
 private:
-    /* data */
-    pthread_t _tid;
-    pid_t _lwpid;
-    std::string _name;
-    func_t _func;
-    bool _isrunning;
+    pthread_t _tid;     //线程库级别id，用于线程库内部的线程管理
+    pid_t _lwpid;       //Linux内核线程id，用于内核级别操作和系统调用
+    std::string _name;  //线程名称
+    func_t _func;       //线程执行函数
+    bool _isrunning;    //线程运行状态标识
 
 public:
     Thread(func_t func, const std::string &name = threadnamefault)
