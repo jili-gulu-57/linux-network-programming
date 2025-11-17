@@ -1,3 +1,4 @@
+//用户使用LOG宏 → 创建LogMessage对象 → 流式拼接日志内容 → 对象析构时自动刷新 → 通过策略输出到目标
 #pragma once
 
 #include <iostream>
@@ -8,6 +9,7 @@
 #include <unistd.h>
 #include "Mutex.hpp"
 
+//日志级别枚举
 enum class LogLevel
 {
     DEBUG,
@@ -17,6 +19,7 @@ enum class LogLevel
     FATAL
 };
 
+//将枚举值转换为可读字符串
 std::string LeverlToString(LogLevel level)
 {
     switch (level)
@@ -37,6 +40,7 @@ std::string LeverlToString(LogLevel level)
     }
 }
 
+//获取当前时间
 std::string GetCurrentTime()
 {
     // 获取时间戳
@@ -55,7 +59,7 @@ std::string GetCurrentTime()
     return timebuffer;
 }
 
-// 基类方法
+// 策略模式基类方法
 class LogStrategy
 {
 public:
@@ -163,6 +167,7 @@ public:
               _line(line),
               _logger(logger)
         {
+            //输出完整的日志格式
             std::stringstream ss;
             ss << "[" << _curr_time << "]"
                << "[" << LeverlToString(_level) << "]"

@@ -19,16 +19,16 @@ using func_t = std::function<void()>;
 // using func_t :类型别名语法，相当于typedef
 // std::function<void()>：函数对象类型
 
-const std::string threadnamefault = "None-name";    //默认线程名称
+const std::string threadnamefault = "None-name"; // 默认线程名称
 
 class Thread
 {
 private:
-    pthread_t _tid;     //线程库级别id，用于线程库内部的线程管理
-    pid_t _lwpid;       //Linux内核线程id，用于内核级别操作和系统调用
-    std::string _name;  //线程名称
-    func_t _func;       //线程执行函数
-    bool _isrunning;    //线程运行状态标识
+    pthread_t _tid;    // 线程库级别id，用于线程库内部的线程管理
+    pid_t _lwpid;      // Linux内核线程id，用于内核级别操作和系统调用
+    std::string _name; // 线程名称
+    func_t _func;      // 线程执行函数
+    bool _isrunning;   // 线程运行状态标识
 
 public:
     Thread(func_t func, const std::string &name = threadnamefault)
@@ -57,12 +57,18 @@ public:
             printf("create thread success\n");
         }
     }
+
+    void Stop()
+    {
+        
+    }
+
     void Join()
     {
-        int n = pthread_join(_tid,nullptr);
-        if(n==0)
+        int n = pthread_join(_tid, nullptr);
+        if (n == 0)
         {
-            std::cout<<"join success"<<std::endl;
+            std::cout << "join success" << std::endl;
         }
     }
     ~Thread()
