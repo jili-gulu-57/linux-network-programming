@@ -8,11 +8,13 @@ void Usage(std::string proc)
     std::cout << "Usage:" << proc << "serverip serverport" << std::endl;
 }
 
-std::string chat(const std::string &word, const std::string &whoip, const std::string &whoport)
+void chat(int sockfd, std::string message,InetAddr addr)
 {
-    return "1";
+    LOG(LogLevel::DEBUG)<<"sockfd: "<<sockfd;
+    LOG(LogLevel::DEBUG)<<"message: "<<message;
+    LOG(LogLevel::DEBUG)<<"client info: "<<addr.IP()<<"-"<<addr.PORT();
+    sendto(sockfd,message.c_str(),message.size(),0,addr.ADDR(),)
 }
-
 // ./
 int main(int argc, char *argv[])
 {
@@ -23,7 +25,7 @@ int main(int argc, char *argv[])
     }
 
     EnableConsoleLogStrategy();
-    u_int16_t serverport = std::stoi(argv[2]);
+    u_int16_t port = std::stoi(argv[1]);
 
     std::unique_ptr<ChatServer> usvr = std::make_unique<ChatServer>(port,chat);
 

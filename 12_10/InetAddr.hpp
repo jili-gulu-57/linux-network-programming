@@ -11,21 +11,11 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 
+typedef Conv(addr)(struct sockaddr *) _addr;
+
 class InetAddr
 {
-public:
-    InetAddr(const struct sockaddr_in &addr) : _addr(addr)  //传参为网络序列
-    {
-        //调用N->H
-        Net2Host();
-    }
-
-    //传参为主机序列
-    InetAddr(const std::string&ip,u_int16_t&port):_ip(ip),_port(port)
-    {
-
-    }
-
+private:
     // 网络序列转主机序列
     void Net2Host()
     {
@@ -33,13 +23,50 @@ public:
         std::string clientip = inet_ntoa(_addr.sin_addr);
     }
 
-    //主机转网络序列
+    // 主机转网络序列
     void Host2Net()
     {
-        memset(&_addr,0,sizeof(_addr));
-        _addr.sin_family=AF_INET;
-        _addr.sin_port=htons(_port);
-        _addr.sin_addr.s_addr=inet_addr(_ip.c_str());
+        memset(&_addr, 0, sizeof(_addr));
+        _addr.sin_family = AF_INET;
+        _addr.sin_port = htons(_port);
+        _addr.sin_addr.s_addr = inet_addr(_ip.c_str());
+        //_ip.c_str()：将C++ string转换为C风格字符串
+        // inet_addr()：将点分十进制IP字符串转换为网络字节序的32位整数
+    }
+
+public:
+    InetAddr(const struct sockaddr_in &addr)
+        : _addr(addr) // 传参为网络序列
+    {
+        // 调用N->H
+        Net2Host();
+    }
+
+    // 传参为主机序列
+    InetAddr(u_int16_t &port, const std::string &ip = "0.0.0.0")
+        : _port(port), _ip(ip)
+    {
+        Net2Host();
+    }
+
+    std::string IP()
+    {
+        return _ip;
+    }
+
+    u_int16_t PORT()
+    {
+        return _port;
+    }
+
+    struct sockaddr_in ADDR()
+    {
+        return _addr;
+    }
+
+    socklen_t Length()
+    {
+        return sizeof(_addr);
     }
 
     ~InetAddr()
