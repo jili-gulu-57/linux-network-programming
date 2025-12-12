@@ -69,6 +69,12 @@ public:
         return sizeof(_addr);
     }
 
+    //重载==运算符，判断两个客户端地址是否相同
+    bool operator==(const InetAddr&addr)
+    {
+
+    }
+
     ~InetAddr()
     {
     }
