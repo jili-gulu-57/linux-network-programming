@@ -18,13 +18,20 @@ public:
     {
         pthread_mutex_destroy(&_lock);
     }
+
     void Lock()
     {
         pthread_mutex_lock(&_lock);
     }
+
     void Unlock()
     {
         pthread_mutex_unlock(&_lock);
+    }
+
+    pthread_mutex_t* Get()
+    {
+        return &_lock;
     }
 };
 
