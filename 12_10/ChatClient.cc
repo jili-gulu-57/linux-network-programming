@@ -1,11 +1,27 @@
-#include "UdpServer.hpp"
+#include "ChatServer.hpp"
 #include <iostream>
 #include <memory>
+#include<sys/socket.h>
+#include<sys/types.h>
+#include<arpa/inet.h>
+#include<netinet/in.h>
 #include <string.h>
+#include<thread>    //C++多线程
+
+int sockfd=-1;
 
 void Usage(std::string proc)
 {
     std::cout << "Usage:" << proc << "serverip serverport" << std::endl;
+}
+
+void InitClient(const std::string&serverip,u_int16_t serverport)
+{
+    sockfd=socket(AF_INET,SOCK_DGRAM,0);
+    if(sockfd<0)
+    {
+        std::cout<<"create sockfd error"<<std::endl;
+    }
 }
 
 int main(int argc, char *argv[])
@@ -19,7 +35,7 @@ int main(int argc, char *argv[])
     std::string serverip = argv[1];
     u_int16_t serverport = std::stoi(argv[2]);
 
-    int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
     if (sockfd < 0)
     {
         std::cout << "create socket fail" << std::endl;

@@ -72,7 +72,7 @@ public:
     //重载==运算符，判断两个客户端地址是否相同
     bool operator==(const InetAddr&addr)
     {
-
+        return (_ip==addr._ip&&_port==addr._port);
     }
 
     ~InetAddr()
