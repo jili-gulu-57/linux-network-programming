@@ -12,11 +12,11 @@
 //日志级别枚举
 enum class LogLevel
 {
-    DEBUG,
-    INFO,
-    WARNING,
-    ERROR,
-    FATAL
+    DEBUG,  //调试
+    INFO,   //信息
+    WARNING,    //警告
+    ERROR,      //错误
+    FATAL   //重大错误
 };
 
 //将枚举值转换为可读字符串

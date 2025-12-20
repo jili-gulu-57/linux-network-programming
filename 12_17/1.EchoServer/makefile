@@ -2,10 +2,10 @@
 all:tcp_client tcp_server
 
 tcp_client:TcpClient.cc
-	g++ -o $@ $^ -std=c++11
+	g++ -o $@ $^ -std=c++17
 
-tcp_server:TcpServer
-	g++ -o $@ $^ -std=c++11
+tcp_server:TcpServer.cc
+	g++ -o $@ $^ -std=c++17
 
 .PHONY:clean
 clean:
