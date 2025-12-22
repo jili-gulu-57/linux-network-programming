@@ -38,7 +38,7 @@ public:
     InetAddr(const struct sockaddr_in &addr)
         : _addr(addr) // 传参为网络序列
     {
-        // 调用N->H
+        // 调用H->N
         Net2Host();
     }
 
@@ -46,20 +46,20 @@ public:
     InetAddr(u_int16_t &port, const std::string &ip = "0.0.0.0")
         : _port(port), _ip(ip)
     {
-        Net2Host();
+        Host2Net();
     }
 
-    std::string IP()
+    std::string Ip()
     {
         return _ip;
     }
 
-    u_int16_t PORT()
+    u_int16_t Port()
     {
         return _port;
     }
 
-    struct sockaddr *ADDR()
+    struct sockaddr *Addr()
     {
         return Conv(_addr);
     }
