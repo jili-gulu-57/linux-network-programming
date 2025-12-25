@@ -1,0 +1,11 @@
+#include<cstdlib>
+
+enum 
+{
+    OK,
+    SOCKET_CREATE_ERR,
+    SOCKET_BIND_ERR,
+    SOCKET_LISTEN_ERR,
+    SOCKET_CONNECT_ERR,
+    FORK_ERR
+};
