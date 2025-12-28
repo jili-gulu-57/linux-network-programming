@@ -16,6 +16,9 @@ enum
     LISTEN_ERR
 };
 
+static const int gsockfd = -1;
+static int gbacklog=16;
+
 //抽象基类，定义标准接口
 class Socket
 {
@@ -30,15 +33,14 @@ public:
 
 public:
     //模板方法，组合了socket的完整建立过程
-    void BuildListenSocketMethod()
+    void BuildListenSocketMethod(int _port)
     {
         CreateSocketOrDie();
-        BindSocketOrDie();
-        ListenSocketOrDie();
+        BindSocketOrDie(_port);
+        ListenSocketOrDie(gbacklog);
     }
 };
 
-static const int gsockfd = -1;
 
 //具体实现类（继承自socket类）
 class TcpSocket : public Socket

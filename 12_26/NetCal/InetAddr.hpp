@@ -35,6 +35,10 @@ private:
     }
 
 public:
+    InetAddr()
+    {
+    }
+    
     InetAddr(const struct sockaddr_in &addr)
         : _addr(addr) // 传参为网络序列
     {
