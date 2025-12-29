@@ -53,6 +53,12 @@ public:
         Host2Net();
     }
 
+    void Init(struct sockaddr_in addr)
+    {
+        _addr=addr;
+        Net2Host();
+    }
+    
     std::string Ip()
     {
         return _ip;
