@@ -26,6 +26,29 @@ public:
         }
     }
 
+    void HandlerRequest(std::shared_ptr<Socket>sockfd,InetAddr addr)
+    {
+        //长服务
+        std::string inbuffer;
+        while(true)
+        {
+            ssize_t n=sockfd->Recv(&inbuffer);
+            if(n>0)
+            {
+
+            }
+            else if(n==0)
+            {
+                LOG(LogLevel::DEBUG)<<addr.ToString()<<"quit,me too";
+                break;
+            }
+            else
+            {
+                LOG(LogLevel::DEBUG)<<addr.ToString()<<"read error,quit";
+            }
+        }
+    }
+
     ~TcpServer()
     {
     }

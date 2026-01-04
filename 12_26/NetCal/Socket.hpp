@@ -30,7 +30,10 @@ public:
     virtual void BindSocketOrDie(u_int16_t port) = 0; // virtual表示这个函数可以在派生类中被重写
     virtual void ListenSocketOrDie(int backlog) = 0;
     virtual std::shared_ptr<Socket> Accept(InetAddr *clientaddr) = 0;
-    
+    virtual int Sockfd() = 0;
+    virtual void Close() = 0;
+    virtual ssize_t Recv(std::string *out) = 0;
+    virtual ssize_t Send(const std::string &in) = 0;
 
 public:
     // 模板方法，组合了socket的完整建立过程
