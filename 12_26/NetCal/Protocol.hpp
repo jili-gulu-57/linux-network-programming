@@ -2,22 +2,62 @@
 
 #include <iostream>
 #include <string>
+#include <jsoncpp/json/json.h>
 
 class Request
 {
 public:
     Request()
     {
+        _x = _y = _oper = 0;
     }
 
     // 序列化对象
-    std::string Serialize()
+    bool Serialize(std::string *out)
     {
+        Json::Value root;
+        root["x"] = _x;
+        root["y"] = _y;
+        root["oper"] = _oper;
+
+        Json::StyledWriter writer;
+        *out = writer.write(root);
+        if (out->empty())
+        {
+            return false;
+        }
+        return true;
     }
 
     // 反序列化对象
-    void Deserialize()
+    bool Deserialize(std::string &in)
     {
+        Json::Reader reader;
+        Json::Value root;
+        bool ret = reader.parse(in, root);
+        if (!ret)
+            return false;
+
+        _x = root["x"].asInt();
+        _y = root["y"].asInt();
+        _oper = root["oper"].asInt();
+
+        return true;
+    }
+
+    int X()
+    {
+        return _x;
+    }
+
+    int Y()
+    {
+        return _y;
+    }
+
+    char Oper()
+    {
+        return _oper;
     }
 
     ~Request()
@@ -36,16 +76,48 @@ class ResPonse
 public:
     ResPonse()
     {
+        _result = _code = 0;
     }
 
     // 序列化对象
-    std::string Serialize()
+    bool Serialize(std::string *out)
     {
+        Json::Value root;
+        root["result"] = _result;
+        root["code"] = _code;
+
+        Json::StyledWriter writer;
+        *out = writer.write(root);
+        if (out->empty())
+        {
+            return false;
+        }
+        return true;
     }
 
     // 反序列化对象
-    void Deserialize()
+    bool Deserialize(std::string &in)
     {
+        Json::Reader reader;
+        Json::Value root;
+        bool ret = reader.parse(in, root);
+        if (!ret)
+            return false;
+
+        _result = root["result"].asInt();
+        _code = root["code"].asInt();
+
+        return true;
+    }
+
+    int Result()
+    {
+        return _result;
+    }
+
+    int Code()
+    {
+        return _code;
     }
 
     ~ResPonse()
@@ -72,7 +144,7 @@ public:
     }
 
     // 报头有效性检查
-    bool DigitalIsSafe(std::string &len)
+    static bool DigitalIsSafe(std::string len)
     {
         for (int i = 0; i < len.size(); i++)
         {
@@ -83,11 +155,11 @@ public:
     }
 
     // 解包
-    static bool Unpack(std::string *origin_str, std::string *package)
+    static int Unpack(std::string &origin_str, std::string *package)
     {
         // 字符串为空
-        if (!origin_str)
-            return false;
+        if (origin_str.empty())
+            return 0;
 
         // len\r\njsonstr\r\n
         // len\r\n
@@ -96,13 +168,31 @@ public:
         // len\r\njsonstr\r\nlen\r\n
         // len\r\njsonstr\r\nlen\r\njsonstr
         // len
-        auto pos = origin_str->find(sep);
+        auto pos = origin_str.find(sep);
         if (pos == std::string::npos)
         {
             // 没找到分隔符位置，绝对不是有效报文
-            return false;
+            return 0;
         }
 
-        std::string len = origin_str->substr(0, pos);
+        std::string len = origin_str.substr(0, pos); // 报头长度
+        // 报头有效性检查
+        if (!DigitalIsSafe(len))
+            return -1;
+
+        int digit_len = std::stoi(len);                            // 有效数据长度
+        int target_len = len.size() + digit_len + 2 * sizeof(sep); // 报文整体长度
+
+        // 有效报文长度小于应有长度
+        if (origin_str.size() < digit_len)
+            return 0;
+
+        // 处理有效报文
+        // 提取有效报文
+        *package = origin_str.substr(pos + sep.size(), digit_len);
+
+        // 原字符串移除已提取的报文
+        origin_str.erase(0, target_len);
+        return target_len;
     }
 };
