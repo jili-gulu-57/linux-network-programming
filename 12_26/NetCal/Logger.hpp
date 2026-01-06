@@ -1,4 +1,4 @@
-//用户使用LOG宏 → 创建LogMessage对象 → 流式拼接日志内容 → 对象析构时自动刷新 → 通过策略输出到目标
+// 用户使用LOG宏 → 创建LogMessage对象 → 流式拼接日志内容 → 对象析构时自动刷新 → 通过策略输出到目标
 #pragma once
 
 #include <iostream>
@@ -9,17 +9,17 @@
 #include <unistd.h>
 #include "Mutex.hpp"
 
-//日志级别枚举
+// 日志级别枚举
 enum class LogLevel
 {
-    DEBUG,  //调试
-    INFO,   //信息
-    WARNING,    //警告
-    ERROR,      //错误
-    FATAL   //重大错误
+    DEBUG,   // 调试
+    INFO,    // 信息
+    WARNING, // 警告
+    ERROR,   // 错误
+    FATAL    // 重大错误
 };
 
-//将枚举值转换为可读字符串
+// 将枚举值转换为可读字符串
 std::string LeverlToString(LogLevel level)
 {
     switch (level)
@@ -40,7 +40,7 @@ std::string LeverlToString(LogLevel level)
     }
 }
 
-//获取当前时间
+// 获取当前时间
 std::string GetCurrentTime()
 {
     // 获取时间戳
@@ -153,9 +153,17 @@ private:
 
 public:
     Logger()
-    {}
-    ~Logger()
-    {}
+    {
+    }
+    void EnableConsoleLogStrategy()
+    {
+        _strategy = std::make_unique<ConsoleLogStrategy>();
+    }
+    void EnableFileLogStrategy()
+    {
+        _strategy = std::make_unique<FileLogStrategy>();
+    }
+
     class LogMessage
     {
     public:
@@ -167,7 +175,7 @@ public:
               _line(line),
               _logger(logger)
         {
-            //输出完整的日志格式
+            // 输出完整的日志格式
             std::stringstream ss;
             ss << "[" << _curr_time << "]"
                << "[" << LeverlToString(_level) << "]"
@@ -178,7 +186,7 @@ public:
             _loginfo = ss.str();
         }
         template <typename T>
-        LogMessage& operator << (const T &info)
+        LogMessage &operator<<(const T &info)
         {
             std::stringstream ss;
             ss << info;
@@ -200,25 +208,20 @@ public:
         pid_t _pid;
         std::string _filename;
         int _line;
-        std::string _loginfo;   //一条合并好的，完整的日志信息
+        std::string _loginfo; // 一条合并好的，完整的日志信息
         Logger &_logger;
     };
     LogMessage operator()(LogLevel level, std::string filename, int line)
     {
-        return LogMessage(level,filename,line,*this);
+        return LogMessage(level, filename, line, *this);
     }
-    void EnableConsoleLogStrategy()
+    ~Logger()
     {
-        _strategy=std::make_unique<ConsoleLogStrategy>();
-    }
-    void EnableFileLogStrategy()
-    {
-        _strategy=std::make_unique<FileLogStrategy>();
     }
 };
 
 Logger logger;
 
-#define LOG(level) logger(level,__FILE__,__LINE__)
+#define LOG(level) logger(level, __FILE__, __LINE__)
 #define EnableConsoleLogStrategy() logger.EnableConsoleLogStrategy()
 #define EnableFileLogStrategy() logger.EnableFileLogStrategy()

@@ -1,19 +1,28 @@
+#pragma once
+
 #include <iostream>
 #include <string>
 #include "Protocol.hpp"
+#include "Logger.hpp"
+#include <functional>
+
+using handler_t = std::function<ResPonse(Request &req)>;
 
 class Parser
 {
 public:
-    Parser()
+    Parser(handler_t handler)
+        : _handler(handler)
     {
     }
 
+    // 根据协议负责网络通信中的粘包拆包，序列化和反序列化问题
     std::string Parse(std::string &inbuffer)
     {
         std::string send_str;
         while (true)
         {
+            // 1.拆包
             std::string jsonstr;
             // 解析报文
             int n = Protocol::Unpack(inbuffer, &jsonstr);
@@ -25,26 +34,30 @@ public:
             {
                 break;
             }
+
             else
             {
+                //打印jsonstr
+                LOG(LogLevel::DEBUG)<<"\r\n"<<jsonstr;
+                // 2.反序列化（拆包成功）
                 Request req;
-                // 反序列化
                 if (!req.Deserialize(jsonstr))
                 {
                     // 反序列化失败，返回空串
                     return std::string();
                 }
 
-                ResPonse resp = a(req);
+                // 3.对数据进行处理（反序列化成功）
+                ResPonse resp = _handler(req);
 
-                // 对resp进行序列化
+                // 4.对结果（resp）进行序列化
                 std::string resp_json;
                 if (!resp.Serialize(&resp_json))
                 {
                     return std::string();
                 }
 
-                // 打包
+                // 5.打包
                 send_str += Protocol::Package(resp_json);
             }
         }
@@ -54,4 +67,7 @@ public:
     ~Parser()
     {
     }
+
+private:
+    handler_t _handler;
 };

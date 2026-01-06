@@ -64,7 +64,7 @@ public:
     {
     }
 
-private:
+public:
     //  x oper y
     int _x;
     int _y;
@@ -110,14 +110,19 @@ public:
         return true;
     }
 
-    int Result()
+    void Result(int r)
     {
-        return _result;
+        _result = r;
     }
 
-    int Code()
+    void Code(int c)
     {
-        return _code;
+        _code = c;
+    }
+
+    void Print()
+    {
+        std::cout <<"结果为："<< _result << std::endl;
     }
 
     ~ResPonse()
