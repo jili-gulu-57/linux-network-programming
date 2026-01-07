@@ -3,6 +3,7 @@
 #include "Protocol.hpp"
 #include "Calculator.hpp"
 #include "Parser.hpp"
+#include "Daemon.hpp"
 #include <memory>
 
 // ┌─────────────────────────────────────────────────────────┐
@@ -66,7 +67,10 @@ int main(int argc, char *argv[])
         exit(0);
     }
 
-    EnableConsoleLogStrategy();
+    Daemon();
+
+    // EnableConsoleLogStrategy();
+    EnableFileLogStrategy();
 
     // 创建Calculator（业务处理）
     std::unique_ptr<Calculator> cal = std::make_unique<Calculator>();
@@ -75,12 +79,11 @@ int main(int argc, char *argv[])
     std::unique_ptr<Parser> par = std::make_unique<Parser>([&cal](Request &req) -> ResPonse // 返回类型：Response
                                                            { return cal->Exec(req); });
 
-
     // 创建TcpServer（网络通信）
     u_int16_t serverport = std::stoi(argv[1]);
     std::unique_ptr<TcpServer> tsock = std::make_unique<TcpServer>(serverport, [&par](std::string &inbuffer) -> std::string
                                                                    { return par->Parse(inbuffer); });
-    
+
     tsock->Run();
 
     return 0;
