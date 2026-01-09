@@ -36,7 +36,7 @@ std::string LeverlToString(LogLevel level)
         return "Fatal";
 
     default:
-        return "Unkoown";
+        return "Unkown";
     }
 }
 
@@ -63,15 +63,15 @@ std::string GetCurrentTime()
 class LogStrategy
 {
 public:
-    virtual ~LogStrategy() = default;
-    virtual void SyncLog(const std::string &logmessage) = 0;
+    virtual ~LogStrategy() = default;   //虚析构函数
+    virtual void SyncLog(const std::string &logmessage) = 0;    //纯虚函数
 };
 
 // 显示器刷新
 class ConsoleLogStrategy : public LogStrategy
 {
 private:
-    Mutex _lock;
+    Mutex _lock;    //互斥锁，保证多线程安全
 
 public:
     ~ConsoleLogStrategy()
@@ -81,7 +81,7 @@ public:
     {
         {
             LockGuard lockguard(&_lock);
-            std::cout << logmessage << std::endl;
+            std::cout << logmessage << std::endl;   //输出到终端
         }
     }
 };
@@ -98,20 +98,21 @@ private:
     Mutex _lock;
 
 public:
+    //构造函数，可指定文件位置和日志文件名称
     FileLogStrategy(const std::string &dir = logdefaultdir,
                     const std::string filename = logfilename)
         : _dir_path_name(dir),
           _filename(filename)
     {
         LockGuard lockguard(&_lock);
-        if (std::filesystem::exists(dir))
+        if (std::filesystem::exists(dir))   //目录已存在则返回
         {
             return;
         }
         try
         {
             // 可能出现因为权限问题等创建失败
-            std::filesystem::create_directories(_dir_path_name);
+            std::filesystem::create_directories(_dir_path_name);//创建目录
         }
         catch (const std::filesystem::filesystem_error &e)
         {
@@ -125,15 +126,15 @@ public:
             LockGuard lockguard(&_lock);
             std::string target = _dir_path_name;
             target += "/";
-            target += _filename;
+            target += _filename;    //完整文件路径
 
-            std::ofstream out(target.c_str(), std::ios::app);
+            std::ofstream out(target.c_str(), std::ios::app);//以追加方式打开文件
             if (!out.is_open())
             {
                 return;
             }
-            out << logmessage << "\n";
-            out.close();
+            out << logmessage << "\n";  //写入文件
+            out.close();    //关闭文件
         }
     }
     ~FileLogStrategy()
@@ -141,7 +142,9 @@ public:
     }
 };
 
-//////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
+
+//主日志类
 
 // 1.定制刷新策略
 // 2.构建完整日志
@@ -149,16 +152,20 @@ public:
 class Logger
 {
 private:
-    std::unique_ptr<LogStrategy> _strategy;
+    std::unique_ptr<LogStrategy> _strategy;//使用智能指针管理策略对象
 
 public:
     Logger()
     {
     }
+
+    //启用终端输出策略
     void EnableConsoleLogStrategy()
     {
         _strategy = std::make_unique<ConsoleLogStrategy>();
     }
+
+    //启动文件输出策略
     void EnableFileLogStrategy()
     {
         _strategy = std::make_unique<FileLogStrategy>();
@@ -167,6 +174,7 @@ public:
     class LogMessage
     {
     public:
+        //初始化日志基本信息
         LogMessage(LogLevel level, std::string &filename, int line, Logger &logger)
             : _curr_time(GetCurrentTime()),
               _level(level),
@@ -175,7 +183,7 @@ public:
               _line(line),
               _logger(logger)
         {
-            // 输出完整的日志格式
+            // 构建日志头部：[时间][级别][PID][文件名][行号] - 
             std::stringstream ss;
             ss << "[" << _curr_time << "]"
                << "[" << LeverlToString(_level) << "]"
@@ -185,6 +193,8 @@ public:
                << " - ";
             _loginfo = ss.str();
         }
+
+        //重载"<<"运算符，直接链式调用
         template <typename T>
         LogMessage &operator<<(const T &info)
         {
@@ -211,10 +221,13 @@ public:
         std::string _loginfo; // 一条合并好的，完整的日志信息
         Logger &_logger;
     };
+
+    //重载"()"运算符，构造LogMessage对象
     LogMessage operator()(LogLevel level, std::string filename, int line)
     {
         return LogMessage(level, filename, line, *this);
     }
+    
     ~Logger()
     {
     }
