@@ -24,30 +24,24 @@ public:
     {
         // 长服务-持续处理一个连接的请求
         std::string inbuffer;
-        while (true)
+
+        ssize_t n = sockfd->Recv(&inbuffer); // 从客户端接收数据
+        if (n > 0)
         {
-            ssize_t n = sockfd->Recv(&inbuffer); // 从客户端接收数据
-            if (n > 0)
-            {
-                std::string send_str = _cb(inbuffer);
-                // 回调函数：反序列化解析接收的数据 ->处理数据 ->序列化结果
-                if (send_str.empty())
-                    continue;
-
+            std::string send_str = _cb(inbuffer);
+            // 回调函数：反序列化解析接收的数据 ->处理数据 ->序列化结果
                 sockfd->Send(send_str); // 发送回客户端
-            }
-
-            else if (n == 0) // 客户端正常关闭
-            {
-                LOG(LogLevel::DEBUG) << addr.ToString() << "quit,me too";
-                break;
-            }
-            else // 读取错误（n<0）
-            {
-                LOG(LogLevel::DEBUG) << addr.ToString() << "read error,quit";
-                break;
-            }
         }
+
+        else if (n == 0) // 客户端正常关闭
+        {
+            LOG(LogLevel::DEBUG) << addr.ToString() << "quit,me too";
+        }
+        else // 读取错误（n<0）
+        {
+            LOG(LogLevel::DEBUG) << addr.ToString() << "read error,quit";
+        }
+
         sockfd->Close();
     }
 
@@ -59,11 +53,10 @@ public:
         while (true)
         {
 
-            InetAddr addr;                              // 存储客户端地址
+            InetAddr addr; // 存储客户端地址
 
             auto sockfd = _listensocket->Accept(&addr); // 接受新连接
 
-            
             if (sockfd == nullptr) // 连接失败
                 continue;          // 等待下一个连接
 
