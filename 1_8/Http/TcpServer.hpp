@@ -22,7 +22,7 @@ public:
 
     void HandlerRequest(std::shared_ptr<Socket> sockfd, InetAddr addr)
     {
-        // 长服务-持续处理一个连接的请求
+        // 短服务
         std::string inbuffer;
 
         ssize_t n = sockfd->Recv(&inbuffer); // 从客户端接收数据
@@ -48,7 +48,6 @@ public:
     void Run()
     {
 
-        // signal(SIGCHLD, SIG_IGN); // 忽略子进程终止信号
         // 子进程执行完成后内核自动清理资源，不会变成僵尸进程
         while (true)
         {
