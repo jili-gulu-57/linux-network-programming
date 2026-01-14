@@ -7,18 +7,21 @@
 #include "Socket.hpp"
 #include "Logger.hpp"
 
-//http协议中的换行符
+// http协议中的换行符
 static const std::string linesep = "\r\n";
-//请求行中的分隔符
+// 请求行中的分隔符
 static const std::string innersep1 = " ";
-//http头部键值对的分隔符
+// http头部键值对的分隔符
 static const std::string innersep2 = ": ";
 
+static const std::string webroot = "./wwwroot";
+static const std::string defaulthome = "index.html";
 
-//用于解析浏览器（客户端）发来的请求的类
+// 用于解析浏览器（客户端）发来的请求的类
 class HttpRequset
 {
 private:
+    // 读取一行http内容
     std::string ReadOneLine(std::string &reqstr, bool *status)
     {
         // 找到分隔符位置
@@ -40,13 +43,15 @@ private:
         return line;
     }
 
+    // 解析请求行
     void ParseReqLine(std::string &reqline)
     {
         // GET / HTTP/1.1 -->      std::string _method;std::string _uri;std::string _httpversion;
-        std::stringstream ss(reqline);
-        ss >> _method >> _uri >> _httpversion;
+        std::stringstream ss(reqline);         // 使用字符串流方便分割
+        ss >> _method >> _uri >> _httpversion; // 分别提取方法，URI，http版本
     }
 
+    // 构造键值对
     void BuildKV(std::string &line, std::string *k, std::string *v)
     {
         // Connection:keep-alive
@@ -70,6 +75,7 @@ public:
         // 不做
     }
 
+    // 反序列化http请求
     bool Deserialize(std::string &reqstr)
     {
         bool status = true;
@@ -78,12 +84,14 @@ public:
             return false;
 
         LOG(LogLevel::DEBUG) << reqline;
+        // 解析请求行
         ParseReqLine(reqline);
 
         LOG(LogLevel::DEBUG) << "method: " << _method;
         LOG(LogLevel::DEBUG) << "uri: " << _uri;
         LOG(LogLevel::DEBUG) << "httpversion: " << _httpversion;
 
+        // 解析头部
         while (true)
         {
             status = true;
@@ -92,8 +100,12 @@ public:
             {
                 std::string k, v;
                 BuildKV(reqline, &k, &v);
+                if (k.empty() || v.empty())
+                    continue; // 解析失败这次循环停止
+
+                _req_headers.insert(std::make_pair(k, v));
             }
-            else if (status)
+            else if (status) // 空行，表示头部结束
             {
                 _blank_line = linesep;
                 break;
@@ -103,6 +115,15 @@ public:
                 LOG(LogLevel::DEBUG) << "非法请求";
                 break;
             }
+            _req_body = reqstr;
+
+            _path = webroot;
+            _path += _uri;
+            if (_uri == "/")
+            {
+                _path += defaulthome;
+            }
+            LOG(LogLevel::DEBUG) << "path:" << _path;
         }
 
         return true;
@@ -118,36 +139,52 @@ public:
     }
 
 private:
-    std::string _method;
-    std::string _uri;
-    std::string _httpversion;
-    std::unordered_map<std::string, std::string> _req_headers;
-    std::string _blank_line;
-    std::string _resp_body;
-
-    std::string _path;
+    std::string _method;                                       // http方法，GET，POST等
+    std::string _uri;                                          // 请求uri，/index.html等
+    std::string _httpversion;                                  // http版本
+    std::unordered_map<std::string, std::string> _req_headers; // 请求头部键值对
+    std::string _blank_line;                                   // 空行，分割头部和正文
+    std::string _req_body;                                     // 请求正文
+    std::string _path;                                         // 请求文件的物理路径（解析后的路径）
 };
 
 class HttpResponse
 {
 public:
-    HttpResponse() : _httpversion("HTTP/1.1"), _blank_line("\r\n")
+    HttpResponse() : _httpversion("HTTP/1.1"), _blank_line(linesep)
     {
     }
 
+    void SetHeader(const std::string &k, const std::string &v)
+    {
+        _resp_headers[k] = v;
+    }
+
+    // 序列化http响应
     std::string Serialize()
     {
+        // 构建响应行，如HTTP/1.1 200 OK\r\n
         std::string respstr = _httpversion + innersep1 + std::to_string(_code) +
                               innersep1 + _desc + linesep;
 
+        if (!_resp_body.empty())
+        {
+            std::string len = std::to_string(_resp_body.size());
+            SetHeader("Content-Length", len);
+        }
+        else
+        {
+        }
+        // 构建响应头部
         for (auto &elem : _resp_headers)
         {
             std::string line = elem.first + innersep2 + elem.second + linesep;
             respstr += line;
         }
 
-        respstr += _blank_line;
-        respstr += _resp_body;
+        respstr += _blank_line; // 添加空行
+
+        respstr += _resp_body; // 添加正文
 
         return respstr;
     }
@@ -157,13 +194,15 @@ public:
         // 不做
     }
 
-    void ReadContent(const std::string &path)
+    // 读取文件内容
+    bool ReadContent(const std::string &path)
     {
         // 以二进制方式读取
         std::ifstream file(path, std::ios::binary);
         if (!file.is_open())
         {
-            throw std::runtime_error("无法打开：" + path);
+            LOG(LogLevel::WARNING) << path << "资源不存在";
+            return false;
         }
 
         file.seekg(0, std::ios::end);
@@ -174,18 +213,36 @@ public:
 
         file.read(&_resp_body[0], fileSize);
 
-        if (!file)
-        {
-            throw std::runtime_error("读取文件失败：" + path);
-        }
         file.close();
+        return true;
+    }
+
+    std::string Code2Desc(int code)
+    {
+        switch (code)
+        {
+        case 200:
+            return "OK";
+        case 404:
+            return "NOT FOUND";
+        default:
+            return "";
+        }
     }
 
     // 设置状态码和状态码描述
-    void SetCode(int code, const std::string &desc)
+    void SetCode(int code)
     {
-        _code = code;
-        _desc = desc;
+        // 1xx-5xx的状态码才是合法的
+        if (code >= 100 && code < 600)
+        {
+            _code = code;
+            _desc = Code2Desc(_code);
+        }
+        else
+        {
+            LOG(LogLevel::WARNING) << "非法状态码：" << code;
+        }
     }
 
     ~HttpResponse()
@@ -193,12 +250,12 @@ public:
     }
 
 private:
-    std::string _httpversion;
-    int _code;
-    std::string _desc;
-    std::unordered_map<std::string, std::string> _resp_headers;
-    std::string _blank_line;
-    std::string _resp_body;
+    std::string _httpversion;                                   // http版本
+    int _code;                                                  // 状态码，202，404等
+    std::string _desc;                                          // 状态码描述，如OK，NOT，FOUND等
+    std::unordered_map<std::string, std::string> _resp_headers; // 响应头部
+    std::string _blank_line;                                    // 空白行
+    std::string _resp_body;                                     // 响应正文
 };
 
 class Http
@@ -208,17 +265,30 @@ public:
     {
     }
 
+    // 处理http请求
     std::string HandlerRequset(std::string &requeststr)
     {
         std::string respstr;
         HttpRequset req;
+
+        // 解析请求
         if (req.Deserialize(requeststr))
         {
             HttpResponse resp;
-            resp.ReadContent(req.Path());
-            resp.SetCode(200, "OK");
+            // 读取请求的文件
+            if (resp.ReadContent(req.Path()))
+            {
+                // 设置响应状态
+                resp.SetCode(200);
+            }
+            else
+            {
+                resp.SetCode(404);
+            }
+            // 序列化响应
             respstr = resp.Serialize();
         }
+        return respstr;
     }
 
     ~Http()
