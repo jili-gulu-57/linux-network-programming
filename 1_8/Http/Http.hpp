@@ -17,6 +17,8 @@ static const std::string innersep2 = ": ";
 static const std::string webroot = "./wwwroot";
 static const std::string defaulthome = "index.html";
 
+static const std::string suffixsep = "."; // 后缀分割符
+
 // 用于解析浏览器（客户端）发来的请求的类
 class HttpRequset
 {
@@ -87,9 +89,9 @@ public:
         // 解析请求行
         ParseReqLine(reqline);
 
-        LOG(LogLevel::DEBUG) << "method: " << _method;
-        LOG(LogLevel::DEBUG) << "uri: " << _uri;
-        LOG(LogLevel::DEBUG) << "httpversion: " << _httpversion;
+        // LOG(LogLevel::DEBUG) << "method: " << _method;
+        // LOG(LogLevel::DEBUG) << "uri: " << _uri;
+        // LOG(LogLevel::DEBUG) << "httpversion: " << _httpversion;
 
         // 解析头部
         while (true)
@@ -134,6 +136,20 @@ public:
         return _path;
     }
 
+    std::string Suffix()
+    {
+        // path: index.html
+        if (_path.empty())
+            return std::string();
+        else
+        {
+            auto pos = _path.rfind(suffixsep); // 从后往前查找
+            if (pos == std::string::npos)
+                return std::string();
+            return _path.substr(pos);
+        }
+    }
+
     ~HttpRequset()
     {
     }
@@ -155,11 +171,6 @@ public:
     {
     }
 
-    void SetHeader(const std::string &k, const std::string &v)
-    {
-        _resp_headers[k] = v;
-    }
-
     // 序列化http响应
     std::string Serialize()
     {
@@ -167,14 +178,13 @@ public:
         std::string respstr = _httpversion + innersep1 + std::to_string(_code) +
                               innersep1 + _desc + linesep;
 
+        // 判断响应正文是否为空
         if (!_resp_body.empty())
         {
             std::string len = std::to_string(_resp_body.size());
             SetHeader("Content-Length", len);
         }
-        else
-        {
-        }
+
         // 构建响应头部
         for (auto &elem : _resp_headers)
         {
@@ -245,6 +255,11 @@ public:
         }
     }
 
+    void SetHeader(const std::string &k, const std::string &v)
+    {
+        _resp_headers[k] = v;
+    }
+
     ~HttpResponse()
     {
     }
@@ -260,6 +275,16 @@ private:
 
 class Http
 {
+    std::string Suffix2Desc(const std::string &suffix)
+    {
+        if (suffix == "html")
+            return "text/html";
+        else if (suffix == ".jpg")
+            return "image/jpeg";
+        else
+            return std::string();
+    }
+
 public:
     Http()
     {
@@ -278,6 +303,9 @@ public:
             // 读取请求的文件
             if (resp.ReadContent(req.Path()))
             {
+                std::string suffix = req.Suffix();
+                std::string mime_type_value = Suffix2Desc(suffix); // 将资源后缀转换为文件类型（Content-Type）
+                resp.SetHeader("Content-Type", mime_type_value);
                 // 设置响应状态
                 resp.SetCode(200);
             }
