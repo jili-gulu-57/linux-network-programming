@@ -127,7 +127,6 @@ public:
             }
             LOG(LogLevel::DEBUG) << "path:" << _path;
         }
-
         return true;
     }
 

@@ -49,6 +49,6 @@ int main(int argc, char *argv[])
          [&http](std::string &reqstr)->std::string 
          {return http->HandlerRequset(reqstr);});
     tsock->Run();
-
+    
     return 0;
 }

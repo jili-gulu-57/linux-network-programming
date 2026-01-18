@@ -1,0 +1,18 @@
+{
+    "editor.suggestFontSize": 16,
+    "editor.fontSize": 16,
+    "terminal.integrated.fontSize": 16,
+    "debug.console.fontSize": 16,
+    "markdown.preview.fontSize": 16,
+    "window.zoomLevel": 1,
+    // 侧边栏（资源管理器、搜索、Git等）
+    "workbench.tree.indent": 16,
+    
+    "workbench.statusBar.fontSize": 20,
+    
+    // 标签页（文件标签）
+    "workbench.editor.labelFontSize": 20,
+    
+    // 面包屑导航
+    "breadcrumbs.fontSize": 20
+}
