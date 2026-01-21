@@ -161,6 +161,7 @@ private:
     std::string _blank_line;                                   // 空行，分割头部和正文
     std::string _req_body;                                     // 请求正文
     std::string _path;                                         // 请求文件的物理路径（解析后的路径）
+    std::vector<std::string> _cookie;
 };
 
 class HttpResponse
@@ -259,6 +260,11 @@ public:
         _resp_headers[k] = v;
     }
 
+    void SetCookie()
+    {
+        
+    }
+
     ~HttpResponse()
     {
     }
@@ -270,6 +276,7 @@ private:
     std::unordered_map<std::string, std::string> _resp_headers; // 响应头部
     std::string _blank_line;                                    // 空白行
     std::string _resp_body;                                     // 响应正文
+    std::vector<std::string> _cookie;
 };
 
 class Http
