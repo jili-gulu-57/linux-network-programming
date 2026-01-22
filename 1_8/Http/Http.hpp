@@ -260,7 +260,7 @@ public:
         _resp_headers[k] = v;
     }
 
-    void SetCookie()
+    void SetCookie(std::string key,std::string value)
     {
         
     }
