@@ -262,11 +262,12 @@ public:
 
     void SetCookie(std::string key,std::string value)
     {
-        
+
     }
 
     ~HttpResponse()
     {
+    
     }
 
 private:
