@@ -20,7 +20,8 @@ private:
 
 public:
     BlockQueue(u_int32_t cap = gcap) : _cap(cap)
-    {}
+    {
+    }
 
     void Enqueue(const T &in)
     {
@@ -54,7 +55,8 @@ public:
         pthread_mutex_unlock(&_lock);
     }
     ~BlockQueue()
-    {}
+    {
+    }
 
 private:
     std::queue<T> _bq;
@@ -62,4 +64,17 @@ private:
     Mutex _lock;
     Cond _c_cond; // 消费者对应环境变量
     Cond _p_cond; //
+};
+
+class LockGuard()
+{
+public:
+    LockGuard()
+    {}
+    ~LockGuard()
+    {
+
+    }
+private:
+    Mutex *_mutexp;
 };

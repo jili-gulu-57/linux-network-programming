@@ -8,6 +8,12 @@
 #include "Thread.hpp"
 #include "Cond.hpp"
 
+//线程池是通过预先创建一批线程来处理任务，并重复利用，减少频繁创建、销毁线程的开销。
+//1.任务队列：①待处理的任务（通常用队列或链表实现）②包含任务添加和取出接口
+//2.线程管理器：①创建和销毁线程 ②管理线程数量 ③监管线程状态
+//3.工作线程：①从任务队列获取任务并执行 ②空闲时等待新任务 ③执行完任务线程不销毁，等待下一个
+//4.任务接口：①定义任务执行的标准接口 ②通常包含回调函数或函数指针
+
 // const表示该量是常量，不可修改；static避免重复定义
 const static int defaultthreadnum = 3; // 默认线程个数
 
@@ -47,6 +53,7 @@ private:
         }
     }
 public:
+    //初始化：创建线程
     ThreadPool(int threadnum = defaultthreadnum) 
     : _threadnum = threadnum,
      _is_running(false),
@@ -56,7 +63,7 @@ public:
         for (int i = 0; i < _threadnum; i++)
         {
             // 方法1：
-            auto f = std::bind(hello, this);
+            // auto f = std::bind(hello, this);
 
             // 方法2：lambda表达式
             _threads.emplace_back([this]()
@@ -68,6 +75,7 @@ public:
 
             // _threads.push_back(std::move(t));
         }
+        LOG(LogLevel::INFO)<<"thread pool running success";
     }
     ~ThreadPbool()
     {

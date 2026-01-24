@@ -1,6 +1,8 @@
 #include "ChatServer.hpp"
 #include <iostream>
 #include <memory>
+#include"ThreadPool.hpp"
+#include"Route.hpp"
 #include <string.h>
 
 void Usage(std::string proc)
@@ -26,6 +28,14 @@ int main(int argc, char *argv[])
 
     EnableConsoleLogStrategy();
     u_int16_t port = std::stoi(argv[1]);
+
+    //1.消息转发功能
+    std::unique_ptr<Route> r=std::make_unique<Route>();
+
+    //2.线程池对象
+    auto tp=ThreadPool<task_t>::
+
+    //3.服务器对象
 
     std::unique_ptr<ChatServer> usvr = std::make_unique<ChatServer>(port,chat);
 

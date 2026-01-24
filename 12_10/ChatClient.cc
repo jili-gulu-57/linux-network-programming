@@ -1,49 +1,51 @@
 #include "ChatServer.hpp"
 #include <iostream>
 #include <memory>
-#include<sys/socket.h>
-#include<sys/types.h>
-#include<arpa/inet.h>
-#include<netinet/in.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
 #include <string.h>
-#include<thread>    //C++多线程
+#include <thread> //C++多线程
 
-int sockfd=-1;
+int sockfd = -1;
+
+std::string serverip;
+u_int16_t serverport;
 
 void Usage(std::string proc)
 {
     std::cout << "Usage:" << proc << "serverip serverport" << std::endl;
 }
 
-void InitClient(const std::string&serverip,u_int16_t serverport)
+void InitClient(const std::string &serverip, u_int16_t serverport)
 {
-    sockfd=socket(AF_INET,SOCK_DGRAM,0);
-    if(sockfd<0)
-    {
-        std::cout<<"create sockfd error"<<std::endl;
-    }
-}
-
-int main(int argc, char *argv[])
-{
-    if (argc != 3)
-    {
-        Usage(argv[0]);
-        exit(1);
-    }
-
-    std::string serverip = argv[1];
-    u_int16_t serverport = std::stoi(argv[2]);
-
     sockfd = socket(AF_INET, SOCK_DGRAM, 0);
     if (sockfd < 0)
     {
-        std::cout << "create socket fail" << std::endl;
-        return 0;
+        std::cout << "create sockfd error" << std::endl;
     }
+}
 
-    // 客户端不需要显示bindIP和端口号，OS会随机bind端口号
+void recver()
+{
+    while (true)
+    {
+        // 读
+        struct sockaddr_in temp;
+        socklen_t len = sizeof(temp);
+        char buffer[1024];
+        int m = recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *)&temp, &len);
+        if (m > 0)
+        {
+            buffer[m] = 0;
+            std::cout << buffer << std::endl;
+        }
+    }
+}
 
+void sender()
+{
     struct sockaddr_in server;
     memset(&server, 0, sizeof(server));
     server.sin_family = AF_INET;
@@ -58,22 +60,28 @@ int main(int argc, char *argv[])
 
         // 写
         sendto(sockfd, line.c_str(), line.size(), 0, (struct sockaddr *)&server, sizeof(server));
+    }
+}
 
-        // 读
-        struct sockaddr_in temp;
-        socklen_t len = sizeof(temp);
-        char buffer[1024];
-        int m = recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *)&temp, &len);
-        if (m > 0)
-        {
-            buffer[m]=0;
-            std::cout<<buffer<<std::endl;
-        }
+int main(int argc, char *argv[])
+{
+    if (argc != 3)
+    {
+        Usage(argv[0]);
+        exit(1);
     }
 
-    EnableConsoleLogStrategy();
-    std::unique_ptr<UdpServer> usvr = std::make_unique<UdpServer>();
-    usvr->Init();
+    serverip = argv[1];
+    serverport = std::stoi(argv[2]);
+    InitClient(serverip, serverport);
+
+    // 客户端不需要显示bindIP和端口号，OS会随机bind端口号
+
+    std::thread trecv(recver);
+    std::thread tsend(sender);
+
+    trecv.join();
+    tsend.join();
 
     return 0;
 }

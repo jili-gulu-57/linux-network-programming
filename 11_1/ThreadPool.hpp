@@ -63,4 +63,19 @@ public:
         for (auto &t : _threads)
             t.Start();
     }
+    void Stop()
+    {
+        if (!_is_running)
+            return;          // 线程未启动，直接返回
+        _is_running = false; // 防止重复停止进程
+
+        for (auto &t : _threads)
+            t.Stop();
+    }
+
+    void Wait() // 等待所有线程
+    {
+        for (auto &t : _threads)
+            t.Join();
+    }
 };

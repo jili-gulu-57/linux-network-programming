@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <pthread.h>
+#include <functional>
 #include "Mutex.hpp"
 #include "Logger.hpp"
 #include "Comm.hpp"
@@ -16,6 +17,8 @@
 static const int gdefaultfd = -1;
 static const int gbacklog = 8;
 static const int gport = 8080;
+
+using callback_t _cb=
 
 class CommandServer
 {
@@ -129,7 +132,7 @@ public:
     {
         ThreadData *td = static_cast<ThreadData *>(args);
         pthread_detach(pthread_self());
-        td->_self->HandlerIO(td->_sockfd,td->_addr);
+        td->_self->HandlerIO(td->_sockfd, td->_addr);
 
         delete td;
 

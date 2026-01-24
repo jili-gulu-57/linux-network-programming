@@ -116,6 +116,11 @@ public:
         return true;
     }
 
+    void PrintAddr()
+    {
+
+    }
+
 private:
     key_t _key;
     int _size; // 内存块大小

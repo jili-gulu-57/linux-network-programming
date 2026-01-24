@@ -85,8 +85,14 @@ public:
             if (id == 0)
             {
                 // 子进程，父写子读
+                //除了关闭写端，还要关闭从父进程继承的写端
+                for(auto &c:_channels)
+                {
+                    c.Close();
+                }
+                
                 close(pipefd[1]);
-                sleep(10);
+                // sleep(10);
 
                 // todo
                 cb(pipefd[0]);
@@ -142,13 +148,20 @@ public:
 
     void WaitSubProcess()
     {
-        for (auto &c : _channels)
-            c.Close();
-        for (auto &c : _channels)
+        for(auto &c:_channels)
         {
+            c.Close();
             c.Wait();
-            printf("子进程%d被回收\n", c.Target());
         }
+
+
+        // for (auto &c : _channels)
+        //     c.Close();
+        // for (auto &c : _channels)
+        // {
+        //     c.Wait();
+        //     printf("子进程%d被回收\n", c.Target());
+        // }
     }
 
 private:

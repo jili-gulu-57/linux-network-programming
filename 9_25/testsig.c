@@ -12,6 +12,7 @@ void handler(int signo)
 
 int main()
 {
+    
     signal(2,handler);
     printf("进程启动：%d\n",getpid());
     while(!flag);

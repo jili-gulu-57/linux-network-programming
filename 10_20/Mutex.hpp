@@ -27,3 +27,13 @@ public:
         pthread_mutex_unlock(&_lock);
     }
 };
+
+class MutexGuard
+{
+private:
+    Mutex* _mutex;
+public:
+ MutexGuard(/* args */);
+    ~ MutexGuard();
+};
+
