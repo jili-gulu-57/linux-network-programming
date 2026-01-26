@@ -77,6 +77,10 @@ public:
             LOG(LogLevel::FATAL) << "create socket error";
             exit(CREATE_ERR);
         }
+
+        int opt=1;
+        //地址复用
+        setsockopt(_sockfd,SOCK_STREAM,SO_REUSEADDR|SO_REUSEPORT,&opt,sizeof(opt));
         LOG(LogLevel::INFO) << "create socket success";
     }
 
