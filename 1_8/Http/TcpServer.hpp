@@ -42,7 +42,7 @@ public:
             LOG(LogLevel::DEBUG) << addr.ToString() << "read error,quit";
         }
 
-        sockfd->Close();
+        // sockfd->Close();
     }
 
     void Run()
@@ -67,7 +67,7 @@ public:
                 HandlerRequest(sockfd, addr);
                 exit(0);
             }
-            sockfd->Close();
+            // sockfd->Close();
         }
     }
 
