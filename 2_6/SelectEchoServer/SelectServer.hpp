@@ -25,6 +25,7 @@ public:
         {
             fd_array[i] = gdefaultfd;
         }
+        fd_array[0] = _listensock->Sockfd();
     }
 
     // 接收客户端请求
@@ -88,7 +89,7 @@ public:
         }
     }
 
-    //事件派发器，不同事件派发到不同处理函数中
+    // 事件派发器，不同事件派发到不同处理函数中
     void EventDispatcher(fd_set &rfds)
     {
         LOG(LogLevel::INFO) << "fd就绪，有新事件到来";
@@ -141,11 +142,11 @@ public:
                 LOG(LogLevel::INFO) << "添加fd：" << fd_array[i];
             }
             // FD_SET(_listensock->Sockfd(), &rfds);
-            int n = select(maxfd + 1, &rfds, nullptr, nullptr, &timeout);
+            int n = select(maxfd + 1, &rfds, nullptr, nullptr, nullptr);
             switch (n)
             {
             case 0:
-                LOG(LogLevel::DEBUG) << "timeout……" << timeout.tv_sec << ":" << timeout;
+                LOG(LogLevel::DEBUG) << "timeout……" << timeout.tv_sec << ":" << timeout.tv_usec;
                 break;
             case -1:
                 LOG(LogLevel::ERROR) << "select error";
@@ -156,7 +157,9 @@ public:
         }
     }
 
-    ~SelectServer();
+    ~SelectServer()
+    {
+    }
 
 private:
     std::unique_ptr<Socket> _listensock;

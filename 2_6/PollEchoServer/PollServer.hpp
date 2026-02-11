@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <string>
-#include <sys/select.h>
+#include <poll.h>
 #include <memory>
 #include <algorithm>
 #include "Socket.hpp"
@@ -12,10 +12,10 @@
 const static int gsize = sizeof(fd_set) * 8; // 最大存储文件描述符个数
 const static int gdefaultfd = -1;            // 默认文件描述符值
 
-class SelectServer
+class PollServer
 {
 public:
-    SelectServer(uint16_t port)
+    PollServer(uint16_t port)
         : _listensock(std::make_unique<TcpSocket>())
     {
         // 创建监听套接字
@@ -23,8 +23,11 @@ public:
         // 初始化文件描述符集
         for (int i = 0; i < gsize; i++)
         {
-            fd_array[i] = gdefaultfd;
+            fd_array[i].fd = gdefaultfd;
+            fd_array[i].events = fd_array[i].revents = 0;
         }
+        fd_array[0].fd = _listensock->Sockfd();
+        fd_array[0].events = POLLIN;
     }
 
     // 接收客户端请求
@@ -42,9 +45,10 @@ public:
         int pos = 0;
         for (; pos < gsize; pos++)
         {
-            if (fd_array[pos] == gdefaultfd) // 找到空位置
+            if (fd_array[pos].fd == gdefaultfd) // 找到空位置
             {
-                fd_array[pos] = sockfd; // 将新客户连接添加进去
+                fd_array[pos].fd = sockfd; // 将新客户连接添加进去
+                fd_array[pos].events = POLLIN | POLLOUT;
                 break;
             }
         }
@@ -60,9 +64,9 @@ public:
     // 读、写暂时一起处理
     void Recver(int index)
     {
-        int sockfd = fd_array[index];
+        int sockfd = fd_array[index].fd;
         char buffer[1024];
-        ssize_t n = read(sockfd, buffer, sizeof(buffer) - 1); // 接收客户端发来的数据
+        ssize_t n = recv(sockfd, buffer, sizeof(buffer) - 1, 0); // 接收客户端发来的数据
         if (n > 0)
         {
             buffer[n] = 0;
@@ -75,33 +79,35 @@ public:
         }
         else if (n == 0) // 客户端关闭
         {
-            fd_array[index] = gdefaultfd;
+            fd_array[index].fd = gdefaultfd;
+            fd_array[index].events = fd_array[index].revents = 0;
             close(sockfd);
-            LOG(LogLevel::INFO) << "client quit,me too" << fd_array[index];
+            LOG(LogLevel::INFO) << "client quit,me too" << fd_array[index].fd;
         }
         else
         {
             // 读出错
-            fd_array[index] = gdefaultfd;
+            fd_array[index].fd = gdefaultfd;
+            fd_array[index].events = fd_array[index].revents = 0;
             close(sockfd);
-            LOG(LogLevel::WARNING) << "recv error" << fd_array[index];
+            LOG(LogLevel::WARNING) << "recv error" << fd_array[index].fd;
         }
     }
 
-    //事件派发器，不同事件派发到不同处理函数中
-    void EventDispatcher(fd_set &rfds)
+    // 事件派发器，不同事件派发到不同处理函数中
+    void EventDispatcher()
     {
-        LOG(LogLevel::INFO) << "fd就绪，有新事件到来";
+        LOG(LogLevel::INFO) << "有新事件到来";
 
         for (int i = 0; i < gsize; i++)
         {
-            if (fd_array[i] == gdefaultfd)
+            if (fd_array[i].fd == gdefaultfd)
                 continue;
 
             // 有读事件就绪
-            if (FD_ISSET(fd_array[i], &rfds))
+            if (fd_array[i].revents & POLLIN)
             {
-                if (fd_array[i] == _listensock->Sockfd()) // 监听套接字就绪
+                if (fd_array[i].fd == _listensock->Sockfd()) // 监听套接字就绪
                 {
                     // 就绪说明有新连接到来，调用Accepter函数
                     Accepter();
@@ -119,46 +125,27 @@ public:
     {
         while (true)
         {
-            // int maxfd = _listensock->Sockfd();
-            int maxfd = gdefaultfd; // 先设置初始值
-            struct timeval timeout = {0, 0};
-
-            fd_set rfds;    // 定义可读文件描述符集
-            FD_ZERO(&rfds); // 清空可读描述符集
-            // 循环遍历找到最大操作符
-            for (int i = 0; i < gsize; i++)
-            {
-                if (fd_array[i] == gdefaultfd)
-                    continue;
-
-                // 第一次会将监听套接字文件描述符设置进去
-                // 之后监听套接字文件描述符有消息即代表有新连接请求
-
-                FD_SET(fd_array[i], &rfds); // 将有效文件描述符设置进去
-
-                if (maxfd < fd_array[i])
-                    maxfd = fd_array[i]; // 更新最大文件描述符
-                LOG(LogLevel::INFO) << "添加fd：" << fd_array[i];
-            }
-            // FD_SET(_listensock->Sockfd(), &rfds);
-            int n = select(maxfd + 1, &rfds, nullptr, nullptr, &timeout);
+            int timeout = 2000;
+            int n = poll(fd_array, gsize, timeout);
             switch (n)
             {
             case 0:
-                LOG(LogLevel::DEBUG) << "timeout……" << timeout.tv_sec << ":" << timeout;
+                LOG(LogLevel::DEBUG) << "timeout……";
                 break;
             case -1:
                 LOG(LogLevel::ERROR) << "select error";
                 break;
             default:
-                EventDispatcher(rfds);
+                EventDispatcher();
             }
         }
     }
 
-    ~SelectServer();
+    ~PollServer()
+    {
+    }
 
 private:
     std::unique_ptr<Socket> _listensock;
-    int fd_array[gsize];
+    struct pollfd fd_array[gsize];
 };
