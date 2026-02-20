@@ -7,6 +7,8 @@
 #include "Socket.hpp"
 #include "Logger.hpp"
 
+static const int gsize = 64;
+
 class EpollServer
 {
 public:
@@ -26,10 +28,26 @@ public:
         ev.events = EPOLLIN;
 
         int n = epoll_ctl(_epfd, EPOLL_CTL_ADD, _listensock->Sockfd(), &ev);
+        (void)n;
     }
 
     void Start()
     {
+        int timeout = 1000;
+        while (true)
+        {
+            int n = epoll_wait(_epfd, revs, gsize, timeout);
+            switch (n)
+            {
+            case 0:
+                LOG(LogLevel::DEBUG) << "time out...";
+                break;
+            case -1:
+                LOG(LogLevel::FATAL) << "epoll error";
+            default:
+                break;
+            }
+        }
     }
 
     ~EpollServer()
@@ -38,5 +56,6 @@ public:
 
 private:
     std::unique_ptr<Socket> _listensock;
-    int _epfd; // epoll_create返回值
+    int _epfd;                      // epoll_create返回值
+    struct epoll_event revs[gsize]; // return events
 };
