@@ -1,0 +1,44 @@
+#pragma once
+
+#include <iostream>
+#include <string>
+#include <sys/epoll.h>
+#include <memory>
+#include "Socket.hpp"
+#include "Logger.hpp"
+#include "Reactor.hpp"
+
+class Epoller
+{
+public:
+    Epoller()
+    {
+        _epfd = epoll_create(128); // 需传入一个正整数
+        if(_epfd<0)
+        {
+            LOG(LogLevel::FATAL) << "epoll create fail!";
+            exit(1);
+        }
+        LOG(LogLevel::INFO) << "epoll create succeed!";
+    }
+
+    //添加要监听的文件描述符及事件（读、写等）
+    void AddEvent(int sockfd,u_int32_t events)
+    {
+        struct epoll_event ev;
+        ev.events = events;
+        ev.data.fd = sockfd;
+        int n = epoll_ctl(_epfd, EPOLL_CTL_ADD, sockfd, &ev);
+        if(n==0)
+        {
+            LOG(LogLevel::INFO)<<""
+        }
+    }
+
+    ~Epoller()
+    {
+    }
+
+private:
+    int _epfd; // 后续管理文件描述符的句柄
+};
