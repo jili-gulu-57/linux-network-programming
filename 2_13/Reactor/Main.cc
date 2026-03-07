@@ -27,7 +27,7 @@ int main(int argc,char* argv[])
     uint16_t serverport = std::stoi(argv[1]);
 
     //连接管理器
-    std::shared_ptr<Connection> listener = std::make_shared<listenner>();
+    std::shared_ptr<Connection> listener = std::make_shared<listener>();
 
     //构建一个Reactor容器
     std::unique_ptr<Reactor>  R=std::make_unique<>

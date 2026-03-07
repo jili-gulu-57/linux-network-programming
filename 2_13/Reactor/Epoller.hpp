@@ -31,12 +31,22 @@ public:
         int n = epoll_ctl(_epfd, EPOLL_CTL_ADD, sockfd, &ev);
         if(n==0)
         {
-            LOG(LogLevel::INFO)<<""
+            LOG(LogLevel::INFO) << sockfd << "添加监听成功";
         }
+    }
+
+    //
+    int Wait(struct epoll_event revs[],int num,int timeout)
+    {
+        int n = epoll_wait(_epfd, revs, num, timeout);
+        (void )n;
+        return n;
     }
 
     ~Epoller()
     {
+        if(_epfd>=0)
+            close(_epfd);
     }
 
 private:

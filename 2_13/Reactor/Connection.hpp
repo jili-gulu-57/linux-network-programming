@@ -12,6 +12,7 @@ class Connection
 {
 public:
     Connection()
+        : _events(0), _owner(nullptr)
     {
     }
 
@@ -24,14 +25,48 @@ public:
         return _sockfd;
     }
 
+    void SetSocketfd(int sockfd)
+    {
+        _sockfd = sockfd;
+    }
+
+    void SetEvents(uint32_t events)
+    {
+        _events = events;
+    }
+
+    uint32_t Events()
+    {
+        return _events;
+    }
+
+    void SetAddr(const InetAddr &addr)
+    {
+        _peer = addr;
+    }
+
     virtual ~Connection()
     {
     }
 
-private:
+    Reactor *Owner()
+    {
+        return _owner;
+    }
+
+    void SetOwner(Reactor *r)
+    {
+        _owner = r;
+    }
+
+protected:
     int _sockfd;
+
+private:
+    uint32_t _events;
     std::string _inbuffer;
     std::string _outbuffer;
-    InetAddr peer;
-    Reactor *owner;
+
+    InetAddr _peer;
+    Reactor *_owner;
 };
