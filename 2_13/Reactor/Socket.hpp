@@ -35,7 +35,7 @@ public:
     virtual void BindSocketOrDie(u_int16_t port) = 0; // virtual表示这个函数可以在派生类中被重写
     virtual void ListenSocketOrDie(int backlog) = 0;
     // virtual std::shared_ptr<Socket> Accept(InetAddr *clientaddr) = 0;
-    virtual int Accept(InetAddr *clientaddr,int *error) = 0;
+    virtual int Accept(InetAddr *clientaddr, int *error) = 0;
     virtual int Sockfd() = 0;
     virtual void Close() = 0;
     virtual ssize_t Recv(std::string *out) = 0;
@@ -103,7 +103,7 @@ public:
     }
 
     // clientaddr输出型参数，存储客户端地址
-    int Accept(InetAddr *clientaddr,int *error) override
+    int Accept(InetAddr *clientaddr, int *error) override
     {
         struct sockaddr_in peer;
         socklen_t len = sizeof(peer);

@@ -1,4 +1,5 @@
 #pragma once
+
 #include <iostream>
 #include <string>
 #include <unordered_map>
@@ -29,7 +30,8 @@ public:
         while (true)
         {
             InetAddr clientaddr;
-            int sockfd = _listensockfd->Accept(&clientaddr);
+            int error = 0;
+            int sockfd = _listensockfd->Accept(&clientaddr, &error);
             if (sockfd < 0)
             {
                 if (errno == EAGAIN)
@@ -39,19 +41,22 @@ public:
                 else
                     break;
             }
-            //获取新连接
-            //1.设置非阻塞
+            // 获取新连接
+            // 1.设置非阻塞
             SetNonBlock(sockfd);
             std::shared_ptr<Connection> conn = std::make_shared<Channel>(sockfd, clientaddr);
-            //2.添加到Reactor
-            
+            conn->SetCallback(_cb);
+            // 2.添加到Reactor
+            Owner()->AddConnection(conn);
         }
     }
+
+    // 监听socket不需要处理读写事件
     void Sender() override
-    {
+    { // empty
     }
     void Excepter() override
-    {
+    { // empty
     }
 
     ~Listener()
