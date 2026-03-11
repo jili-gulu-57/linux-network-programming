@@ -37,6 +37,21 @@ public:
         LOG(LogLevel::INFO) << sockfd << "：添加监听成功";
     }
 
+    void DelEvent(int sockfd)
+    {
+        int n = epoll_ctl(_epfd, EPOLL_CTL_DEL, sockfd, nullptr);
+        if (n != 0) // 删除失败
+        {
+            LOG(LogLevel::INFO) << "delete sockfd:" << sockfd << "fail!";
+            return;
+        }
+        LOG(LogLevel::INFO) << "delete sockfd:" << sockfd << "success!";
+    }
+
+    void ModEvent(int sockfd, u_int32_t event)
+    {
+    }
+
     // 阻塞等待事件
     int Wait(struct epoll_event revs[], int num, int timeout)
     {
