@@ -47,6 +47,31 @@ public:
         LOG(LogLevel::INFO) << conn->Sockfd() << "conn add to Reactor";
     }
 
+    void EnableReadWrite(int sockfd,bool enableread,bool enablewrite)
+    {
+        if(!IsExist(sockfd))
+        {
+            LOG(LogLevel::INFO) << "sockfd:" << sockfd << "not in Reactor";
+            return;
+        }
+        //1.修改connection对象
+        uint32_t events = (enableread ? EPOLLIN : 0) | (enablewrite ? EPOLLOUT : 0) | EPOLLET;
+        _connections[sockfd]->SetEvents(events);
+        //2.写到内核
+        _epoller->ModEvent(sockfd, events);
+    }
+
+    void DelConnection(int sockfd)
+    {
+        if(!IsExist(sockfd))
+        {
+            LOG(LogLevel::INFO) << "sockfd:" << sockfd << "not in Reactor";
+            return;
+        }
+        _epoller->DelEvent(sockfd);
+        _connections.erase(sockfd);
+    }
+
     // 执行一次“等待事件 -> 获取就绪事件 -> 预处理错误 -> 分发处理”
     void LoopOnce(int timeout)
     {

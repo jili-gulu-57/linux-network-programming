@@ -10,6 +10,15 @@
 // 对epoll机制的简单封装
 class Epoller
 {
+private:
+    int OperEventHelper(int sockfd, u_int32_t event, int oper)
+    {
+        struct epoll_event ev;
+        ev.events = event;
+        ev.data.fd = sockfd;
+        return epoll_ctl(_epfd, oper, sockfd, &ev);
+    }
+
 public:
     Epoller() // 构造函数，创建epoll实例
     {
@@ -48,8 +57,15 @@ public:
         LOG(LogLevel::INFO) << "delete sockfd:" << sockfd << "success!";
     }
 
-    void ModEvent(int sockfd, u_int32_t event)
+    void ModEvent(int sockfd, u_int32_t events)
     {
+        int n = OperEventHelper(sockfd, events, EPOLL_CTL_MOD);
+        if (n != 0)
+        {
+            LOG(LogLevel::INFO) << "Mod:" << sockfd << " to epoller failed";
+            return;
+        }
+        LOG(LogLevel::INFO) << "Mod:" << sockfd << " to epoller success";
     }
 
     // 阻塞等待事件

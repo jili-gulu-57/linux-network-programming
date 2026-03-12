@@ -54,7 +54,7 @@ public:
         std::cout << "_outbuffer：" << _outbuffer << std::endl;
         if (!_outbuffer.empty())
         {
-            Sender();
+            Owner()->
         }
     }
     void Sender() override
