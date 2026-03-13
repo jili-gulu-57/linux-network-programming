@@ -34,10 +34,7 @@ public:
     // 添加要监听的文件描述符及事件（读、写等）
     void AddEvent(int sockfd, u_int32_t events)
     {
-        struct epoll_event ev;
-        ev.events = events;
-        ev.data.fd = sockfd;
-        int n = epoll_ctl(_epfd, EPOLL_CTL_ADD, sockfd, &ev);
+        int n = OperEventHelper(sockfd, events, EPOLL_CTL_ADD);
         if (n != 0)
         {
             LOG(LogLevel::INFO) << sockfd << "：添加监听失败";
@@ -84,5 +81,6 @@ public:
     }
 
 private:
-    int _epfd = -1; // 后续管理文件描述符的句柄(初始化一个无效值)
+    int _epfd;
+    // int _epfd = -1; // 后续管理文件描述符的句柄(初始化一个无效值)
 };

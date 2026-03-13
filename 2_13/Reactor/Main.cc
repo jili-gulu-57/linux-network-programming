@@ -39,13 +39,13 @@ int main(int argc, char *argv[])
     // 网络服务
     uint16_t serverport = std::stoi(argv[1]);
 
-    // 构建一个Reactor容器
-    std::unique_ptr<Reactor> R = std::make_unique<Reactor>();
-
     // 连接监听管理器
     std::shared_ptr<Connection> listener = std::make_shared<Listener>(serverport);
     listener->SetCallback([&parser_protocol](std::string &inbuffer) -> std::string
                           { return parser_protocol->Parse(inbuffer); });
+
+    // 构建一个Reactor容器
+    std::unique_ptr<Reactor> R = std::make_unique<Reactor>();
 
     // 把连接管理器添加到Reactor
     R->AddConnection(listener);

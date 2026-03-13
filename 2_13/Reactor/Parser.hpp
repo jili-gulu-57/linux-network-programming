@@ -37,8 +37,9 @@ public:
 
             else
             {
-                //打印jsonstr
-                LOG(LogLevel::DEBUG)<<"\r\n"<<jsonstr;
+                // 打印jsonstr
+                LOG(LogLevel::DEBUG) << "\r\n"
+                                     << jsonstr;
                 // 2.反序列化（拆包成功）
                 Request req;
                 if (!req.Deserialize(jsonstr))

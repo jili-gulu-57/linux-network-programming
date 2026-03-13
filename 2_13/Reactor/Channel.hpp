@@ -14,13 +14,14 @@ class Channel : public Connection
 public:
     Channel(int sockfd, InetAddr &addr)
     {
-        _sockfd = sockfd;
+        SetSocketfd(sockfd);
         SetAddr(addr);
         SetEvents(EPOLLIN | EPOLLET); // 默认监听读事件，边缘触发
     }
 
     void Recever() override
     {
+        std::cout << "Recever called for fd:" << _sockfd << std::endl;
         while (true)
         {
             char buffer[buffersize];
@@ -50,13 +51,15 @@ public:
                 }
             }
         }
+        std::cout << "client：" << _inbuffer << std::endl;
         _outbuffer += _cb(_inbuffer);
         std::cout << "_outbuffer：" << _outbuffer << std::endl;
         if (!_outbuffer.empty())
         {
-            Owner()->
+            Owner()->EnableReadWrite(_sockfd, true, true);
         }
     }
+
     void Sender() override
     {
         while (true)
@@ -65,16 +68,46 @@ public:
             if (n > 0)
             {
                 _outbuffer.erase(0, n);
+                if (_outbuffer.size() == 0)
+                    break;
+            }
+            else if (n == 0)
+                break;
+            else if (n < 0)
+            {
+                if (errno == EAGAIN)
+                    break;
+                else if (errno == EINTR)
+                    continue;
+                else
+                {
+                    Excepter();
+                    return;
+                }
             }
         }
+
+        // 1.发完了
+        // 2.缓冲区被写满
+        if (!_outbuffer.empty())
+        {
+            // 开启对写事件的关心
+            Owner()->EnableReadWrite(_sockfd, true, true);
+        }
+        else
+        {
+            // 关闭对写事件的关心
+            Owner()->EnableReadWrite(_sockfd, true, false);
+        }
     }
+
     void Excepter() override
     {
+        // 统一错误处理
+        Owner()->DelConnection(_sockfd);
     }
 
     ~Channel()
     {
     }
-
-private:
 };

@@ -22,6 +22,7 @@ public:
         _listensockfd->BuildListenSocketMethod(_port);
         SetSocketfd(_listensockfd->Sockfd());
         SetEvents(EPOLLIN | EPOLLET);
+        SetNonBlock(_listensockfd->Sockfd());
     }
 
     void Recever() override

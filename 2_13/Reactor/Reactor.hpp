@@ -1,4 +1,5 @@
 #pragma once
+
 #include <iostream>
 #include <string>
 #include <unordered_map>
@@ -36,10 +37,11 @@ public:
         // 1.判断是否存在
         if (IsExist(conn))
         {
-            LOG(LogLevel::INFO) << conn->Sockfd() << "conn in Reactor";
+            LOG(LogLevel::INFO) << conn->Sockfd() << " conn in Reactor";
             return;
         }
         conn->SetOwner(this);
+
         // 2.加入管理地图
         _connections.insert(std::make_pair(conn->Sockfd(), conn));
         // 3.注册epoll内核
@@ -47,29 +49,32 @@ public:
         LOG(LogLevel::INFO) << conn->Sockfd() << "conn add to Reactor";
     }
 
-    void EnableReadWrite(int sockfd,bool enableread,bool enablewrite)
+    void EnableReadWrite(int sockfd, bool enableread, bool enablewrite)
     {
-        if(!IsExist(sockfd))
+        if (!IsExist(sockfd))
         {
-            LOG(LogLevel::INFO) << "sockfd:" << sockfd << "not in Reactor";
+            LOG(LogLevel::WARNING) << "sockfd:" << sockfd << "not in Reactor";
             return;
         }
-        //1.修改connection对象
+        // 1.修改connection对象
         uint32_t events = (enableread ? EPOLLIN : 0) | (enablewrite ? EPOLLOUT : 0) | EPOLLET;
         _connections[sockfd]->SetEvents(events);
-        //2.写到内核
+
+        // 2.写到内核
         _epoller->ModEvent(sockfd, events);
     }
 
     void DelConnection(int sockfd)
     {
-        if(!IsExist(sockfd))
+        if (!IsExist(sockfd))
         {
             LOG(LogLevel::INFO) << "sockfd:" << sockfd << "not in Reactor";
             return;
         }
         _epoller->DelEvent(sockfd);
         _connections.erase(sockfd);
+        close(sockfd);
+        LOG(LogLevel::INFO) << "remove conn :" << sockfd << " from Reactor success";
     }
 
     // 执行一次“等待事件 -> 获取就绪事件 -> 预处理错误 -> 分发处理”
@@ -90,6 +95,11 @@ public:
             if ((events & EPOLLIN) && IsExist(sockfd))
             {
                 _connections[sockfd]->Recever();
+            }
+
+            if ((events & EPOLLOUT) && IsExist(sockfd))
+            {
+                _connections[sockfd]->Sender();
             }
         }
     }
