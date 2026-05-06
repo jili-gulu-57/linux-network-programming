@@ -1,37 +1,135 @@
-# Linux-study
+# 🐧 Linux Network Programming（Linux 网络与系统编程实践）
 
-#### 介绍
-linux学习
+## 🚀 项目简介
 
-#### 软件架构
-软件架构说明
+本仓库记录了个人在 **Linux 系统编程与网络编程方向** 的系统学习与实践过程，涵盖进程管理、线程模型、IPC通信机制、TCP/IP协议以及高性能网络模型（Reactor / epoll）等核心内容。
 
+通过从基础机制到网络服务开发的逐步深入，完成了多个实验与小项目（如 Echo Server），具备构建基础网络服务的能力。
 
-#### 安装教程
+---
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+## 🧩 内容结构
 
-#### 使用说明
+仓库按「**系统编程 + 网络编程 + 实践项目**」组织：
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+### 🔹 Linux 系统编程
 
-#### 参与贡献
+* 🧵 线程与并发
 
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
+  * 线程创建与控制（pthread）
+  * 线程同步与互斥（锁、条件变量）
+  * 线程安全问题
 
+* 🔄 进程管理
 
-#### 特技
+  * 进程创建（fork）
+  * 进程控制与状态（wait / exit）
+  * 进程调度与切换理解
 
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
-5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  Gitee 封面人物是一档用来展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+* 📡 进程间通信（IPC）
+
+  * 管道（pipe / named pipe）
+  * 共享内存（shared memory）
+  * 信号（signal）
+  * 文件描述符与重定向
+
+---
+
+### 🔹 网络编程
+
+* 🌐 TCP/IP 网络基础
+
+  * Socket 编程模型
+  * TCP/UDP 通信机制
+
+* 📶 IO 多路复用
+
+  * select / poll / epoll
+  * 高并发处理模型
+
+* ⚡ Reactor 模型
+
+  * 事件驱动设计思想
+  * IO + 事件分离处理
+
+* 🌍 HTTP 协议基础
+
+  * 请求/响应结构
+  * 简单服务实现
+
+---
+
+### 🔹 实践项目
+
+* 📡 Echo Server
+
+  * 基于 Socket 的简单回显服务器
+  * 支持客户端连接与数据交互
+
+* 🔧 自定义 Shell
+
+  * 命令解析与执行
+  * 进程创建与控制
+
+* 📂 文件与系统调用实验
+
+  * 文件操作、重定向、缓冲区
+
+---
+
+## ⚙️ 技术栈
+
+* 语言：C / C++
+* 平台：Linux（Ubuntu）
+* 网络：Socket API（TCP/IP）
+* 模型：Reactor / epoll
+* 工具：GCC / GDB / VSCode
+
+---
+
+## 📈 项目特点
+
+* ✅ **体系完整**：覆盖系统编程 + 网络编程核心知识
+* ✅ **从原理到实践**：不仅学习 API，还理解底层机制
+* ✅ **包含项目实践**：具备基础服务器开发能力
+* ✅ **逐步进阶**：从进程 → 线程 → 网络 → 高并发模型
+
+---
+
+## 💡 技术收获
+
+* 📌 熟悉 Linux 系统编程核心概念：
+
+  * 进程 / 线程模型
+  * 进程间通信（IPC）
+  * 文件描述符机制
+
+* 📌 掌握网络编程基础：
+
+  * Socket 编程流程
+  * TCP/IP 通信机制
+
+* 📌 理解高并发处理模型：
+
+  * select / poll / epoll
+  * Reactor 事件驱动模型
+
+* 📌 具备基础服务器开发能力：
+
+  * 能独立实现简单网络服务（如 Echo Server）
+
+---
+
+## 📌 后续优化方向
+
+* 🚀 实现高性能 Web Server（支持并发）
+* ⚡ 引入线程池 / 连接池
+* 📦 支持简单 HTTP 静态资源服务
+* 🔍 优化 IO 模型与性能
+
+---
+
+## 📬 联系方式
+19712705731@163.com
+
+欢迎交流 Linux / 网络编程 / 后端开发相关内容 🚀
